@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Weekly Active Users Line Chart</title>
+  <!-- Include D3.js library from CDN -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    /* Add CSS styles here if needed */
+  </style>
+</head>
+<body>
+  <div id="chartContainer"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Sample data (replace with your actual data)
+      const data = [
+        { date: '2023-07-24', activeUsers: 150 },
+        { date: '2023-07-31', activeUsers: 250 },
+        { date: '2023-08-07', activeUsers: 300 },
+        // Add more data points for each week
+      ];
+
+      // Set up chart dimensions
+      const margin = { top: 20, right: 30, bottom: 40, left: 50 };
+      const width = 600 - margin.left - margin.right;
+      const height = 400 - margin.top - margin.bottom;
+
+      // Parse dates from data
+      const parseDate = d3.timeParse('%Y-%m-%d');
+      data.forEach(d => {
+        d.date = parseDate(d.date);
+      });
+
+      // Create scales
+      const xScale = d3.scaleTime().domain(d3.extent(data, d => d.date)).range([0, width]);
+      const yScale = d3.scaleLinear().domain([0, d3.max(data, d => d.activeUsers)]).range([height, 0]);
+
+      // Create SVG and add chart group
+      const svg = d3.select('#chartContainer')
+        .append('svg')
+        .attr('width', width + margin.left + margin.right)
+        .attr('height', height + margin.top + margin.bottom)
+        .append('g')
+        .attr('transform', `translate(${margin.left}, ${margin.top})`);
+
+      // Create and draw line generator
+      const line = d3.line()
+        .x(d => xScale(d.date))
+        .y(d => yScale(d.activeUsers));
+
+      svg.append('path')
+        .datum(data)
+        .attr('fill', 'none')
+        .attr('stroke', 'steelblue')
+        .attr('stroke-width', 2)
+        .attr('d', line);
+
+      // Create and draw axes
+      const xAxis = d3.axisBottom(xScale)
+        .ticks(d3.timeWeek, 1) // Show ticks every Monday
+        .tickFormat(d3.timeFormat('%B %d')); // Format the tick labels as "Month Day"
+      const yAxis = d3.axisLeft(yScale);
+
+      svg.append('g')
+        .attr('class', 'x axis')
+        .attr('transform', `translate(0, ${height})`)
+        .call(xAxis);
+
+      svg.append('g')
+        .attr('class', 'y axis')
+        .call(yAxis);
+
+      // Add labels (optional)
+      svg.append('text')
+        .attr('x', width / 2)
+        .attr('y', height + margin.bottom)
+        .style('text-anchor', 'middle')
+        .text('Date');
+
+      svg.append('text')
+        .attr('x', -height / 2)
+        .attr('y', -margin.left)
+        .attr('transform', 'rotate(-90)')
+        .style('text-anchor', 'middle')
+        .text('Active Users');
+
+    });
+  </script>
+</body>
+</html>
